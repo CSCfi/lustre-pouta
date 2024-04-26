@@ -1,0 +1,39 @@
+## Instance
+- name: Create lustre CLIENTS
+  openstack.cloud.server:
+    state: "{{ state }}"
+    name: "{{ item }}"
+    image: "{{ os_image }}"
+    flavor: "{{ flavor }}"
+    key_name: "{{ key_name }}"
+    network: "{{ network }}"
+    auto_ip: false
+    security_groups: ["lustre-internal-comm", "default"]
+    meta:
+      hostname: "{{ lustre_client_name }}"
+      group: "{{ lustre_client_name }}"
+  retries: 3
+  async: 300
+  poll: 0
+  register: instances
+  with_sequence: start=1 end={{ number_lustre_clients_instances }} format={{ lustre_client_name }}-%d
+
+- name: Checking instance started
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv
+  until: srv.finished
+  retries: 60
+  delay: 5
+  with_items:
+    - "{{ instances.results }}"
+
+- name: Waiting for IP and Check
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv_ip
+  until: srv_ip.finished
+  retries: 60
+  delay: 1
+  with_items:
+    - "{{ instances.results }}"

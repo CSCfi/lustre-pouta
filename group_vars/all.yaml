@@ -1,0 +1,27 @@
+---
+
+state: present
+os_image: AlmaLinux-8
+ssh_user: almalinux
+flavor: standard.large
+
+# MGS/MDT
+lustre_mgs_mdt_name: lustre-mgs-mdt
+volume_lustre_mgs_mdt_name: lustre-mgt-mdt
+volume_lustre_mgs_mdt_size: 1 # In Gigabytes
+
+# MDS
+lustre_mds_name: lustre-mds
+number_lustre_mds: 1
+volume_lustre_mds_name: lustre-mdt
+volume_lustre_mds_size: 16 # In Gigabytes
+
+# OSS
+lustre_oss_name: oss
+number_lustre_oss_instances: 2
+volume_lustre_oss_name: ost
+volume_lustre_oss_size: 16 # In Gigabytes
+
+# CLIENTS
+lustre_client_name: lustre-client
+number_lustre_clients_instances: 2

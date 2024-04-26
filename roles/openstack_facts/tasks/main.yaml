@@ -1,0 +1,109 @@
+---
+
+## MGS/MDT
+- name: Register openstack mgs-mdt facts
+  openstack.cloud.server_info:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  register: mgs_mdt_facts
+  with_items:
+    - "{{ lustre_mgs_mdt_name }}"
+
+# - name: Check MGS/MDT
+#   debug:
+#     msg: "{{ mgs_mdt_facts }}"
+
+# - name: PAUSE
+#   ansible.builtin.pause:
+
+- name: Building inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: mgs_mdt_instances
+    ansible_host: "{{ item.addresses[network][0].addr }}"
+    ansible_user: almalinux
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p {{ ssh_user }}@{{ jumpHostIP }}' "
+  with_items:
+    - "{{ mgs_mdt_facts.results[0].servers }}"
+
+## MDS
+- name: Register mds servers facts
+  openstack.cloud.server_info:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  register: mds_facts
+  with_items:
+    - "{{ lustre_mds_name }}"
+
+# - name: Check MDS
+#   debug:
+#     msg: "{{ mds_facts }}"
+
+# - name: PAUSE
+#   ansible.builtin.pause:
+
+- name: Building inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: mds_instances
+    ansible_host: "{{ item.addresses[network][0].addr }}"
+    ansible_user: almalinux
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p {{ ssh_user }}@{{ jumpHostIP }}' "
+  with_items:
+    - "{{ mds_facts.results[0].servers }}"
+
+## OSS
+- name: Register oss servers facts
+  openstack.cloud.server_info:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  register: oss_facts
+  with_items:
+    - "{{ lustre_oss_name }}"
+
+# - name: Check OSS
+#   debug:
+#     msg: "{{ oss_facts }}"
+
+# - name: PAUSE
+#   ansible.builtin.pause:
+
+- name: Building inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: oss_instances
+    ansible_host: "{{ item.addresses[network][0].addr }}"
+    ansible_user: almalinux
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p {{ ssh_user }}@{{ jumpHostIP }}' "
+  with_items:
+    - "{{ oss_facts.results[0].servers }}"
+
+## CLIENTS
+- name: Register clients servers facts
+  openstack.cloud.server_info:
+    filters:
+      metadata:
+        group: "{{ item }}"
+  register: clients_facts
+  with_items:
+    - "{{ lustre_client_name }}"
+
+# - name: Check CLIENTS
+#   debug:
+#     msg: "{{ clients_facts }}"
+
+# - name: PAUSE
+#   ansible.builtin.pause:
+
+- name: Building inventory
+  add_host:
+    name: "{{ item.name }}"
+    groups: clients_instances
+    ansible_host: "{{ item.addresses[network][0].addr }}"
+    ansible_user: almalinux
+    ansible_ssh_common_args: "-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o 'ProxyCommand ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -W %h:%p {{ ssh_user }}@{{ jumpHostIP }}' "
+  with_items:
+    - "{{ clients_facts.results[0].servers }}"

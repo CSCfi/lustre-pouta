@@ -1,0 +1,101 @@
+---
+
+- name: Install packages
+  dnf:
+    name:
+      - vim
+      - wget
+
+- name: Add Lustre Server repos
+  yum_repository:
+    file: lustre
+    name: lustre-server
+    description: Lustre repository
+    baseurl: https://downloads.whamcloud.com/public/lustre/latest-release/el8.9/server/
+    gpgcheck: no
+
+- name: Add Lustre Client repos
+  yum_repository:
+    file: lustre
+    name: lustre-client
+    description: Lustre repository
+    baseurl: https://downloads.whamcloud.com/public/lustre/latest-release/el8.9/client/
+    gpgcheck: no
+
+- name: Add e2fsprogs repos
+  yum_repository:
+    file: lustre
+    name: e2fsprogs
+    description: Lustre repository
+    baseurl: https://downloads.whamcloud.com/public/e2fsprogs/latest/el8/
+    gpgcheck: no
+
+- name: Enable repositories
+  community.general.dnf_config_manager:
+    name:
+      - powertools
+
+- name: Install Lustre kernel
+  dnf:
+    name:
+      - e2fsprogs
+      - kernel-core-4.18.0-513.9.1.el8_lustre
+      - epel-release
+
+- name: Reboot box if kernel/libs updated and requested by the system
+  ansible.builtin.reboot:  
+
+- name: Wait for system to become reachable again
+  wait_for_connection:
+      delay: 5
+      timeout: 300
+
+- name: Install Lustre packages for server
+  dnf:
+    name:
+      - lustre
+      - lustre-osd-ldiskfs
+      - lustre-osd-ldiskfs-mount
+      - kmod-lustre-osd-ldiskfs
+
+- name: Reboot to finalize
+  ansible.builtin.reboot:
+
+- name: Wait for system to become reachable again
+  wait_for_connection:
+      delay: 5
+      timeout: 300
+
+- name: Check whether the lustre file system resource exists
+  ansible.builtin.shell:
+    cmd: /sbin/blkid | grep /dev/vdb
+  register: fs_resource_exists
+  failed_when: false
+  changed_when: false
+
+- name: Create a lustre filesystem on /dev/vdb
+  ansible.builtin.command:
+    argv:
+      - mkfs.lustre
+      - --fsname=lustrewt
+      - --mgs
+      - /dev/vdb
+
+- name: Mount lustre
+  ansible.posix.mount:
+    fstype: lustre
+    path: /mgsmds
+    src: /dev/vdb
+    state: mounted
+
+- name: Load lnet module
+  community.general.modprobe:
+    name: lnet
+    state: present
+
+- name: Start lnet
+  ansible.builtin.shell:
+    argv:
+      - lctl
+      - network
+      - up

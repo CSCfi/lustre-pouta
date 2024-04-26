@@ -1,0 +1,51 @@
+## Instance
+- name: Create lustre MDS
+  openstack.cloud.server:
+    state: "{{ state }}"
+    name: "{{ lustre_mds_name }}"
+    image: "{{ os_image }}"
+    flavor: "{{ flavor }}"
+    key_name: "{{ key_name }}"
+    network: "{{ network }}"
+    auto_ip: false
+    security_groups: ["lustre-internal-comm", "default"]
+    meta:
+      hostname: "{{ lustre_mds_name }}"
+      group: "{{ lustre_mds_name }}"
+  retries: 3
+  async: 300
+  poll: 0
+  register: instances
+
+- name: Checking instance started
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv
+  until: srv.finished
+  retries: 60
+  delay: 5
+  with_items:
+    - "{{ instances }}"
+
+- name: Waiting for IP and Check
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv_ip
+  until: srv_ip.finished
+  retries: 60
+  delay: 1
+  with_items:
+    - "{{ instances }}"
+
+## Volume
+- name: Create volume
+  openstack.cloud.volume:
+    state: present
+    size: "{{ volume_lustre_mds_size }}"
+    name: "{{ volume_lustre_mds_name }}"
+
+- name: Attach the volumes to the instance
+  openstack.cloud.server_volume:
+    state: present
+    server: "{{ lustre_mds_name }}"
+    volume: "{{ volume_lustre_mds_name }}"

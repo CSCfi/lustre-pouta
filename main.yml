@@ -1,0 +1,63 @@
+---
+
+- name: Create servers
+  hosts: localhost
+  vars_prompt:
+    - name: key_name
+      prompt: Key name?
+      private: false
+    - name: network
+      prompt: Network?
+      private: false
+    - name: jumpHostIP
+      prompt: Jump Host IP?
+      private: false
+  roles:
+    - instances
+    - openstack_facts
+
+- name: Configure MGS/MDT
+  hosts: mgs_mdt_instances
+  gather_facts: false
+  become: true
+  roles:
+  - hosts
+  - mgs_mdt
+
+- name: Configure MDS
+  hosts: mds_instances
+  gather_facts: false
+  become: true
+  roles:
+  - hosts
+  - mds
+
+- name: Configure OSS
+  hosts: oss_instances
+  gather_facts: false
+  become: true
+  roles:
+  - hosts
+  - oss
+
+- name: Configure OSS Volumes
+  hosts: oss-1
+  gather_facts: false
+  become: true
+  roles:
+  - oss-1_volumes
+
+- name: Configure OSS Volumes
+  hosts: oss-2
+  gather_facts: false
+  become: true
+  roles:
+  - oss-2_volumes
+
+- name: Configure CLIENTS
+  hosts: clients_instances
+  gather_facts: false
+  become: true
+  roles:
+  - hosts
+  - clients

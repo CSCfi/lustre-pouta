@@ -1,0 +1,125 @@
+## CHECK
+# - name: Check MGS/MDS host
+#   debug:
+#     msg: "{{ hostvars[groups['mgs_mdt_instances'][0]]['ansible_host'] }}"
+
+# - name: debug
+#   debug:
+#     msg: "{{ item.index }} - {{ item.devicename }}"
+#   loop: >-
+#     {%- set results = [] -%}
+#     {%- for device in devices -%}
+#         {%- if device['devicename'] is string -%}
+#             {%- for index in device['index'] -%}
+#                 {%- set _ = results.append({
+#                     "devicename": device['devicename'],
+#                     "index": index
+#                 }) -%}
+#             {%- endfor -%}
+#         {%- else -%}
+#             {%- for devicename in device['devicename'] -%}
+#                 {%- for index in device['index'] -%}
+#                     {%- set _ = results.append({
+#                         "devicename": devicename,
+#                         "index": index
+#                     }) -%}
+#                 {%- endfor -%}
+#             {%- endfor -%}
+#         {%- endif -%}
+#     {%- endfor -%}
+#     {{ results }}
+#   vars:
+#     devices:
+#       - devicename: b
+#         index: '4'
+#       - devicename: c
+#         index: '5'
+#       - devicename: d
+#         index: '6'
+#       - devicename: e
+#         index: '7'
+
+# - name: PAUSE
+#   ansible.builtin.pause:
+##
+
+- name: Create a lustre filesystem
+  ansible.builtin.command:
+    argv:
+      - mkfs.lustre
+      - --fsname=lustrewt
+      - --ost
+      - --mgsnode={{ hostvars[groups['mgs_mdt_instances'][0]]['ansible_host'] }}@tcp
+      - --index={{ item.index }}
+      - /dev/vd{{ item.devicename }}
+  loop: >-
+    {%- set results = [] -%}
+    {%- for device in devices -%}
+        {%- if device['devicename'] is string -%}
+            {%- for index in device['index'] -%}
+                {%- set _ = results.append({
+                    "devicename": device['devicename'],
+                    "index": index
+                }) -%}
+            {%- endfor -%}
+        {%- else -%}
+            {%- for devicename in device['devicename'] -%}
+                {%- for index in device['index'] -%}
+                    {%- set _ = results.append({
+                        "devicename": devicename,
+                        "index": index
+                    }) -%}
+                {%- endfor -%}
+            {%- endfor -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{ results }}
+  vars:
+    devices:
+      - devicename: b
+        index: '5'
+      - devicename: c
+        index: '6'
+      - devicename: d
+        index: '7'
+      - devicename: e
+        index: '8'
+
+- name: Mount lustre
+  ansible.posix.mount:
+    fstype: lustre
+    path: /ossost_{{ item.index }}
+    src: /dev/vd{{ item.devicename }}
+    state: mounted
+  loop: >-
+    {%- set results = [] -%}
+    {%- for device in devices -%}
+        {%- if device['devicename'] is string -%}
+            {%- for index in device['index'] -%}
+                {%- set _ = results.append({
+                    "devicename": device['devicename'],
+                    "index": index
+                }) -%}
+            {%- endfor -%}
+        {%- else -%}
+            {%- for devicename in device['devicename'] -%}
+                {%- for index in device['index'] -%}
+                    {%- set _ = results.append({
+                        "devicename": devicename,
+                        "index": index
+                    }) -%}
+                {%- endfor -%}
+            {%- endfor -%}
+        {%- endif -%}
+    {%- endfor -%}
+    {{ results }}
+  vars:
+    devices:
+      - devicename: b
+        index: '5'
+      - devicename: c
+        index: '6'
+      - devicename: d
+        index: '7'
+      - devicename: e
+        index: '8'

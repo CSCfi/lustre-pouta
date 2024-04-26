@@ -1,0 +1,5 @@
+- include_tasks: create_security_groups.yaml
+- include_tasks: create_lustre_mgs-mdt.yaml
+- include_tasks: create_lustre_mds.yaml
+- include_tasks: create_lustre_oss.yaml
+- include_tasks: create_lustre_clients.yaml

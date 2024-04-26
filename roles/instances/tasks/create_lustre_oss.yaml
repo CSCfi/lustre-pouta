@@ -1,0 +1,91 @@
+## Instance
+- name: Create lustre OSS
+  openstack.cloud.server:
+    state: "{{ state }}"
+    name: "{{ item }}"
+    image: "{{ os_image }}"
+    flavor: "{{ flavor }}"
+    key_name: "{{ key_name }}"
+    network: "{{ network }}"
+    auto_ip: false
+    security_groups: ["lustre-internal-comm", "default"]
+    meta:
+      hostname: "{{ lustre_oss_name }}"
+      group: "{{ lustre_oss_name }}"
+  retries: 3
+  async: 300
+  poll: 0
+  register: instances
+  with_sequence: start=1 end={{ number_lustre_oss_instances }} format={{ lustre_oss_name }}-%d
+
+- name: Checking instance started
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv
+  until: srv.finished
+  retries: 60
+  delay: 5
+  with_items:
+    - "{{ instances.results }}"
+
+- name: Waiting for IP and Check
+  async_status:
+    jid: "{{ item.ansible_job_id }}"
+  register: srv_ip
+  until: srv_ip.finished
+  retries: 60
+  delay: 1
+  with_items:
+    - "{{ instances.results }}"
+
+## Volumes
+- name: Calculate number of volumes
+  set_fact:
+    number_volumes: "{{ number_lustre_oss_instances * 4 }}"
+
+- name: Create volumes
+  openstack.cloud.volume:
+    state: present
+    size: "{{ volume_lustre_oss_size }}"
+    name: "{{ item }}"
+  register: volumes
+  with_sequence: start=1 end={{ number_volumes }} format={{ volume_lustre_oss_name }}-%d
+
+# - name: Debug OSS
+#   debug:
+#     msg: "{{ item.item }}"
+#   with_items:
+#     - "{{ instances.results }}"
+
+# - name: Debug OST
+#   debug:
+#     msg: "{{ item.item }}"
+#   with_items:
+#     - "{{ volumes.results }}"
+
+
+## Attach volumes
+- name: Attach the volumes to the first instance
+  openstack.cloud.server_volume:
+    state: present
+    server: "{{ instances.results[0].item }}"
+    volume: "{{ volumes.results[item].item }}"
+  loop:
+    - 0
+    - 1
+    - 2
+    - 3
+
+- name: Attach the volumes to the second instance
+  openstack.cloud.server_volume:
+    state: present
+    server: "{{ instances.results[1].item }}"
+    volume: "{{ volumes.results[item].item }}"
+  loop:
+    - 4
+    - 5
+    - 6
+    - 7
+
+## If you want to deploy more than two instances.
+## Copy paste the 'Attach volumes' section and edit it regarding your needs 

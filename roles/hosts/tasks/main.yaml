@@ -1,0 +1,11 @@
+---
+
+- name: Enumerate all cluster hosts within the /etc/hosts file
+  become: true
+  blockinfile:
+    dest: /etc/hosts
+    marker: "# {mark} ANSIBLE MANAGED: glusterFS Cluster Hosts"
+    content: |
+      {% for host in groups['all'] %}
+      {{ hostvars[host]['ansible_host'] }} {{ host }}
+      {% endfor %}

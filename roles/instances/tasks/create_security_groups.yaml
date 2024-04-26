@@ -1,0 +1,15 @@
+---
+- name: Create security group
+  openstack.cloud.security_group:
+    state: "{{ state }}"
+    name: "lustre-internal-comm"
+    description: "Security group for Lustre cluster"
+
+- name: Internal traffic TCP
+  openstack.cloud.security_group_rule:
+    state: "{{ state }}"
+    security_group: "lustre-internal-comm"
+    protocol: tcp
+    port_range_min: 1
+    port_range_max: 65535
+    remote_ip_prefix: 192.168.0.0/16
