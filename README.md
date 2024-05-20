@@ -10,7 +10,40 @@ The architecture that this playbook deploys is composed of:
 - Two OSS servers, each with four 16GB OST volumes attached
 - Two clients
 
-A small jump host VM needs to be present in order to access the VMs by SSH.
+A small jump host VM needs to be present in order to access the VMs by SSH.  
+
+The ansible script will be launched from your local machine, you need to edit `~/.ssh/config` to add the jumphost and the different VMs that will be deployed.  
+Here is an example, the names of the VMs come from the ansible script, it can be different if you decide to change the names
+
+```
+Host jumphost
+    user {replace_me} # If your jumphost is Ubuntu: ubuntu or if it's AlmaLinux: almalinux
+    hostname {Floating_ip}
+
+Host lustre-client-1
+    user almalinux
+    proxyjump jumphost
+
+Host lustre-client-2
+    user almalinux
+    proxyjump jumphost
+
+Host lustre-oss-1
+    user almalinux
+    proxyjump jumphost
+
+Host lustre-oss-2
+    user almalinux
+    proxyjump jumphost
+
+Host lustre-mds
+    user almalinux
+    proxyjump jumphost
+
+Host lustre-mgs-mds
+    user almalinux
+    proxyjump jumphost
+```
 
 Here are the definitions of each nodes from our [documentation](https://docs.csc.fi/computing/lustre/):
 
@@ -25,9 +58,7 @@ Here are the definitions of each nodes from our [documentation](https://docs.csc
 The prerequisites are installed like this:
 
 ```sh
-$ pip install -r requirements.txt
-
-$ ansible-galaxy install -r requirements.yml 
+$ ansible-galaxy install -r requirements.yaml 
 
 $ source <openrc.sh file>
 Please enter your OpenStack Password for project project_XXXX as user YYYYYYYY:
