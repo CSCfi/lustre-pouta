@@ -13,7 +13,7 @@ The architecture that this playbook deploys is composed of:
 A small jump host VM needs to be present in order to access the VMs by SSH.  
 
 The ansible script will be launched from your local machine, you need to edit `~/.ssh/config` to add the jumphost and the different VMs that will be deployed.  
-Here is an example, the names of the VMs come from the ansible script, it can be different if you decide to change the names
+Here is an example. The names of the VMs come from the ansible script, it can be different if you decide to change the names:
 
 ```
 Host jumphost
@@ -64,11 +64,17 @@ $ source <openrc.sh file>
 Please enter your OpenStack Password for project project_XXXX as user YYYYYYYY:
 ```
 
+Be sure to have [openstacksdk](https://pypi.org/project/openstacksdk/) >= 1.0 installed.  
 Then to create the VMs, call ansible:
 
 ```sh
 $ ansible-playbook main.yml
 ```
+
+It will ask you some information:  
+**Key name?**: The name of the cPouta key pairs.  
+**Network?**: The name of the network used in cPouta. Usually, it's the project name (project_xxxxxx)  
+**Jump Host IP?**: The Floating IP of your jump host in cPouta. Don't forget to assign one.  
 
 All Lustre elements will be installed on Almalinux 8.
 
