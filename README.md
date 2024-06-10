@@ -17,30 +17,36 @@ Here is an example. The names of the VMs come from the ansible script, it can be
 
 ```
 Host jumphost
-    user {replace_me} # If your jumphost is Ubuntu: ubuntu or if it's AlmaLinux: almalinux
+    user {replace_me} # If your jumphost is Ubuntu: ubuntu else if it's AlmaLinux: almalinux
     hostname {Floating_ip}
 
 Host lustre-client-1
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 
 Host lustre-client-2
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 
 Host lustre-oss-1
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 
 Host lustre-oss-2
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 
 Host lustre-mds
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 
 Host lustre-mgs-mds
+    Hostname {internal_VM_IP}
     user almalinux
     proxyjump jumphost
 ```
